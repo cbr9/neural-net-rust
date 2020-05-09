@@ -1,31 +1,34 @@
 use std::f64::consts::E;
-
 fn main() {
     let neuron = Neuron {
-        weights: [-6, 2],
-        bias: 1,
+        weights: vec![3, 2],
+        bias: 1
     };
-    println!("{}", neuron.feedforward([1, 3], ActivationFunction::Sigmoid));
-    println!("{}", neuron.feedforward([1, 3], ActivationFunction::ReLU));
-    println!("{}", neuron.feedforward([1, 3], ActivationFunction::HeavisideStep));
+    println!("{}", neuron.feedforward(vec![1, 3], ActivationFunction::Sigmoid));
+    println!("{}", neuron.feedforward(vec![1, 3], ActivationFunction::ReLU));
+    println!("{}", neuron.feedforward(vec![1, 3], ActivationFunction::HeavisideStep));
 }
 
+fn dot_product(x: &[i32], y: &[i32]) -> i32 {
+    let mut total = 0;
+    if x.len() == y.len() {
+        for i in 0..x.len() {
+            total += x[i] * y[i];
+        }
+        return total;
+    }
+    panic!("vectors don't have the same dimensions")
+}
+
+#[allow(dead_code)]
 struct Neuron {
-    weights: [i32; 2],
+    weights: Vec<i32>,
     bias: i32
 }
 
-fn dot_product(x: [i32; 2], y: [i32; 2]) -> i32 {
-    let mut total: i32 = 0;
-    for i in 0..2 {
-        total += x[i] * y[i]
-    }
-    total
-}
-
 impl Neuron {
-    fn feedforward(&self, inputs: [i32; 2], activation_function: ActivationFunction) -> f64 {
-        let total= dot_product(self.weights, inputs) as f64;
+    fn feedforward(&self, inputs: Vec<i32>, activation_function: ActivationFunction) -> f32 {
+        let total= dot_product(self.weights.as_slice(), inputs.as_slice()) as f32;
        return activation_function.compute(total)
     }
 }
@@ -37,26 +40,25 @@ enum ActivationFunction {
 }
 
 impl ActivationFunction {
-    fn compute(&self, x: f64) -> f64 {
+    fn compute(&self, x: f32) -> f32 {
         return match self {
             self::ActivationFunction::Sigmoid => {
-                1f64 / (1f64 + E.powf(-x))
+                1f32 / (1f32 + E.powf(-x as f64) as f32)  // 1 / (1 + e^-x)
             },
             self::ActivationFunction::ReLU => {
-                if x <= 0f64 {
-                    0f64
+                if x <= 0f32 {
+                    0f32
                 } else {
                     x
                 }
             },
             self::ActivationFunction::HeavisideStep => {
-                if x < 0f64 {
-                    0f64
+                if x < 0f32 {
+                    0f32
                 } else {
-                    1f64
+                    1f32
                 }
             }
-            _ => x
         }
     }
 }
